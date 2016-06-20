@@ -19,7 +19,6 @@ router.use(function(req, res, next) {
     return next();
 });
 
-// api for all etfs
 router.route('/etfs')
     // show all etfs
     .get(function(req, res) {
@@ -32,18 +31,18 @@ router.route('/etfs')
     });
     
 
-//api for a specfic etf
 router.route('/etfs/:id')
     // returns one etf
     .get(function(req,res){
         return res.send({message:'TODO get an existing post by using param ' + req.params.id});
     })
 
-    //update
+    //update one
     .put(function(req,res){
         return res.send({message:'TODO modify an existing post by using param ' + req.params.id});
     })
-
+    
+    // delete one
     .delete(function(req,res){
         return res.send({message:'TODO delete an existing post by using param ' + req.params.id})
     });
