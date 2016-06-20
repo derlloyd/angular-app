@@ -1,7 +1,5 @@
-
 // server framework
 var express = require('express');
-var app = express();
 
 // import variables
 var config = require('./config');
@@ -9,41 +7,32 @@ var config = require('./config');
 var path = require('path');
 
 var favicon = require('serve-favicon');
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 // logs all requests, for dev only
 var logger = require('morgan');
-app.use(logger('dev'));
 
-// authentication
-var session = require('express-session');
-app.use(session({'secret': config.secret}));
-
-var passport = require('passport');
-app.use(passport.initialize());
-app.use(passport.session());
-
+// to get cookie info
 var cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
-//// Initialize Passport
-var initPassport = require('./passport-init');
-initPassport(passport);
 
 // to get params from post requests
 var bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
-// public path
-app.use(express.static(path.join(__dirname, 'public')));
+// authentication
+var session = require('express-session');
+var passport = require('passport');
+
+// import mongoose models
+require('./models/models.js');
+
+// mongoose for mongodb
+var mongoose = require('mongoose');
+mongoose.connect(config.database)
 
 // define routes
 var apiRoutes = require('./routes/api');
-app.use('/api', apiRoutes);
-
 var authRoutes = require('./routes/authenticate')(passport);
-app.use('/auth', authRoutes);
+
+var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -52,10 +41,23 @@ app.set('view engine', 'ejs');
 
 
 
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(logger('dev'));
+app.use(session({'secret': config.secret}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));  // public path
+app.use(passport.initialize());
+app.use(passport.session());
 
+// use defined routes
+app.use('/auth', authRoutes);
+app.use('/api', apiRoutes);
 
-
-
+// Initialize Passport for auth
+var initPassport = require('./passport-init');
+initPassport(passport);
 
 
 // catch 404 and forward to error handler
