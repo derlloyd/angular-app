@@ -1,9 +1,38 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+module.exports = function(passport){
 
-module.exports = router;
+    //sends successful login state back to angular or other app
+    router.get('/success', function(req, res){
+        res.send({state: 'success', user: req.user ? req.user : null});
+    });
+
+    //sends failure login state back to angular or other app
+    router.get('/failure', function(req, res){
+        res.send({state: 'failure', user: null, message: "Invalid username or password"});
+    });
+
+    //log in
+    router.post('/login', passport.authenticate('login', {
+        successRedirect: '/auth/success',
+        failureRedirect: '/auth/failure'
+    }));
+
+    //sign up
+    router.post('/signup', passport.authenticate('signup', {
+        successRedirect: '/auth/success',
+        failureRedirect: '/auth/failure'
+    }));
+
+    //log out
+    router.get('/signout', function(req, res) {
+        req.logout();
+        console.log('redirect to / not defined yet')
+        res.send('signed out, redirect to / not defined yet')
+        // res.redirect('/');
+    });
+
+    return router;
+
+}

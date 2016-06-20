@@ -3,11 +3,6 @@ var bCrypt = require('bcrypt-nodejs');
 //temporary data store + will soon be mongodb
 var users = {};
 
-
-
-
-
-
 module.exports = function(passport){
     // must call the done callback function on every exit point of the function
     
@@ -41,7 +36,7 @@ module.exports = function(passport){
             };
             
             // successfully signed in
-            console.log(users[username].username + 'successfully signed in');
+            console.log(users[username].username + ' successfully signed in');
             return done(null, users[username]);
         }
     ));

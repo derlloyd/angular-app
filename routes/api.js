@@ -1,6 +1,24 @@
 var express = require('express');
 var router = express.Router();
 
+// api route middleware
+router.use(function(req, res, next) {
+    
+    // anyone can use GET method, only auth users can POST, PUT, DELETE
+    if (req.method === "GET") {
+        // for any GET continue to next middleware
+        return next();
+    }
+    if (!req.isAuthenticated()) {
+        // user not authenticated, redirect to login page
+        console.log('not logged in, redirect to login');
+        return res.send('not logged in, redirect to login');
+        // res.redirect('/#login');
+    }
+    // user authenticated, continue to next middleware
+    return next();
+});
+
 // api for all etfs
 router.route('/etfs')
     // show all etfs

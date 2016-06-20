@@ -3,6 +3,9 @@
 var express = require('express');
 var app = express();
 
+// import variables
+var config = require('./config');
+
 var path = require('path');
 
 var favicon = require('serve-favicon');
@@ -14,7 +17,7 @@ app.use(logger('dev'));
 
 // authentication
 var session = require('express-session');
-app.use(session(config.secret));
+app.use(session({'secret': config.secret}));
 
 var passport = require('passport');
 app.use(passport.initialize());
@@ -32,14 +35,15 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// public path
 app.use(express.static(path.join(__dirname, 'public')));
-
-// import variables
-var config = require('config');
 
 // define routes
 var apiRoutes = require('./routes/api');
-// var authRoutes = require('./routes/auth');
+app.use('/api', apiRoutes);
+
+var authRoutes = require('./routes/authenticate')(passport);
+app.use('/auth', authRoutes);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -53,8 +57,6 @@ app.set('view engine', 'ejs');
 
 
 
-app.use('/api', apiRoutes);
-// app.use('/auth', authRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
