@@ -1,53 +1,130 @@
 var express = require('express');
 var router = express.Router();
 
+var mongoose = require('mongoose');
+var Etf = mongoose.model('Etf');
+var User = mongoose.model('User');
+
+
 // api route middleware
 router.use(function(req, res, next) {
-    
+
     // anyone can use GET method, only auth users can POST, PUT, DELETE
     if (req.method === "GET") {
         // for any GET continue to next middleware
         return next();
     }
+    
     if (!req.isAuthenticated()) {
         // user not authenticated, redirect to login page
-        console.log('not logged in, redirect to login');
         return res.send('not logged in, redirect to login');
         // res.redirect('/#login');
     }
+    
     // user authenticated, continue to next middleware
     return next();
 });
 
+
+
+router.route('/users')
+    
+    // show all users
+    .get(function(req, res) {
+        
+        User.find(function(err, users) {
+            if (err) {
+                return res.status(500).json({success: false, message: 'Error retrieving users'});
+            }
+            res.json(users);
+        })
+    });
+
+
 router.route('/etfs')
+    
     // show all etfs
     .get(function(req, res) {
-        res.send({message: "TODO return all"})
+        
+        // can add optional limit after callback
+        Etf.find(function(err, etfs) {
+            if (err) {
+                return res.status(500).json({success: false, message: 'Error retrieving ETFs'});
+            }
+            res.json(etfs);
+        })
     })
-    
+
     // create new
     .post(function(req, res) {
-        res.send({message: "TODO create new etf"})
+        
+        // get info from body
+        var etf = req.body;
+        // validate data
+        if (!etf.name || !etf.ticker) {
+            return res.status(400).json({success: false, message: 'Name and Ticker Required'});
+        };
+        
+        // all good, add docuument
+        Etf.create(etf, function(err, etf) {
+            if (err) {
+                return res.status(500).json({success: false, message: 'Error creating ETF'});
+            };
+            
+            res.json({
+                success: true,
+                message: 'ETF created.',
+                etf: etf
+            });
+        })    
     });
-    
+
 
 router.route('/etfs/:id')
-    // returns one etf
-    .get(function(req,res){
-        return res.send({message:'TODO get an existing post by using param ' + req.params.id});
+    
+    // return one etf
+    .get(function(req, res) {
+        // get requested id
+        var id = { _id: req.params.id };
+  
+        Etf.findOne(id, function(err, etf) {
+            if (err) {
+                return res.status(500).json({success: false, message: 'Error retrieving ETF'});
+            };
+            // return result of query
+            res.json(etf);
+        });
     })
 
     //update one
-    .put(function(req,res){
-        return res.send({message:'TODO modify an existing post by using param ' + req.params.id});
+    .put(function(req, res) {
+        // get requested id
+        var id = { _id: req.params.id };
+        // body contains updated info
+        var etf = req.body;
+        
+        Etf.update(id, {'$set': etf}, function(err, etf) {
+            if (err) {
+                return res.status(500).json({success: false, message: 'Error updating ETF'});
+            };
+            // return success message
+            res.json({success: true, message: 'ETF updated'});
+        });
     })
     
     // delete one
-    .delete(function(req,res){
-        return res.send({message:'TODO delete an existing post by using param ' + req.params.id})
+    .delete(function(req, res) {
+        // get requested id
+        var id = { _id: req.params.id };
+        
+        Etf.remove(id, function(err) {
+			if (err) {
+			   return res.json({success: false, err: err}) 
+			};
+			// return success message
+			res.json({success: true, message: 'ETF deleted'});
+		});
     });
-
-
 
 
 
@@ -254,4 +331,3 @@ app.use('/api', apiRoutes);
 
 
 module.exports = router;
-

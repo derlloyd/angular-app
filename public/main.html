@@ -1,0 +1,24 @@
+<div class="clearfix">
+
+    <form ng-Submit="post()" ng-show='authenticated'>
+        
+        <h4>Add ETF</h4>
+        <input class="form-control" type="text" required placeholder="ETF Ticker" ng-model="newEtf.ticker" />
+        <input class="form-control" type="text" required placeholder="ETF Name" ng-model="newEtf.name" />
+        <input class="btn btn-primary pull-right" type="submit" value="Submit" />
+    
+    </form>
+
+    <div id="etf-list">
+
+        <h4>List of ETFs (sorted by Ticker)</h4>
+
+        <div class='etf' ng-repeat="etf in etfs | orderBy: 'ticker'" ng-class-odd="'odd'" ng-class-even="'even'">
+            <p>Ticker: {{etf.ticker}} - Name: {{etf.name}}</p>
+            <small>Posted by {{etf.created_by}}</small>
+            <small class="pull-right">{{etf.created_at | date:"MMM d, y  h:mma"}}</small>
+        </div>
+
+    </div>
+
+</div>

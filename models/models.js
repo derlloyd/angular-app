@@ -12,7 +12,7 @@ var userSchema = new mongoose.Schema({
 var etfSchema = mongoose.Schema({
     name: {type: String, required: true},
     ticker: {type: String, required: true},
-    username: String,  // { type: Schema.ObjectId, ref: 'User' } ref a user document in user collection
+    created_by: String,  // { type: Schema.ObjectId, ref: 'User' } ref a user document in user collection
     created_at: {type: Date, default: Date.now},
 });
 

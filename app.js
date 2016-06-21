@@ -6,13 +6,15 @@ var config = require('./config');
 
 var path = require('path');
 
-var favicon = require('serve-favicon');
-
 // logs all requests, for dev only
 var logger = require('morgan');
 
 // to get cookie info
 var cookieParser = require('cookie-parser');
+
+// parses request cookies, populating req.cookies and req.signedCookies
+// could pass a secret as argument
+app.use(express.cookieParser());
 
 // to get params from post requests
 var bodyParser = require('body-parser');
@@ -26,22 +28,27 @@ require('./models/models.js');
 
 // mongoose for mongodb
 var mongoose = require('mongoose');
-mongoose.connect(config.database)
 
-// define routes
-var apiRoutes = require('./routes/api');
+if (process.env.DEV_ENV) {
+  // if we are local, use local db
+  mongoose.connect(config.localDatabase)
+} else {
+  // else use cloud db
+  mongoose.connect(config.cloudDatabase)
+};
+
+// import routers
 var authRoutes = require('./routes/authenticate')(passport);
+var apiRoutes = require('./routes/api');
+var indexRoutes = require('./routes/index');
 
 var app = express();
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'ejs');
 
 
-
-
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(session({'secret': config.secret}));
 app.use(bodyParser.json());
@@ -51,14 +58,14 @@ app.use(express.static(path.join(__dirname, 'public')));  // public path
 app.use(passport.initialize());
 app.use(passport.session());
 
-// use defined routes
+// register routers to root paths
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
+app.use('/', indexRoutes);
 
-// Initialize Passport for auth
+// initialize Passport for auth
 var initPassport = require('./passport-init');
 initPassport(passport);
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
