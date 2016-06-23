@@ -5,19 +5,25 @@ var mongoose = require('mongoose');
 var Etf = mongoose.model('Etf');
 var User = mongoose.model('User');
 
-
 // api route middleware
 router.use(function(req, res, next) {
+    // send this back with the result to enable cross origin ressource sharing
+    // for now, this allows everyone "*", but could specify my page "https://access-api-demo2-derlloyd.c9users.io"
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "POST, GET, DELETE, OPTIONS");
 
     // anyone can use GET method, only auth users can POST, PUT, DELETE
     if (req.method === "GET") {
+    console.log("USER SESSION============", req.user)
         // for any GET continue to next middleware
         return next();
-    }
+    };
+    
     
     if (!req.isAuthenticated()) {
-        // user not authenticated, redirect to login page
-        return res.send('not logged in, redirect to login');
+        // user not authenticated
+        return res.json({state: 'failure', message: "User not logged in"});
         // res.redirect('/#login');
     }
     

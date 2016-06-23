@@ -13,7 +13,7 @@ var app = angular.module('myApp', ['ngRoute', 'ngResource']).run(function($rootS
         $rootScope.authenticated = false;
         $rootScope.current_user = 'Guest';
         
-        // TODO error handling
+        $http.get('/')
     };
 });
 
@@ -31,8 +31,8 @@ app.config(function($routeProvider) {
             controller: 'authController'
         })
         // the signup display
-        .when('/register', {
-            templateUrl: 'register.html',
+        .when('/signup', {
+            templateUrl: 'signup.html',
             controller: 'authController'
         });
 });
