@@ -12,6 +12,8 @@ var logger = require('morgan');
 // to get cookie info
 var cookieParser = require('cookie-parser');
 
+// to verify tokens
+var jwt = require('jsonwebtoken');
 
 
 // to get params from post requests

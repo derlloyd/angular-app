@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
+// to verify tokens
+var jwt = require('jsonwebtoken');
+
 module.exports = function(passport) {
     // need to allows cors for /auth routes
     router.use(function(req, res, next) {
@@ -12,38 +15,9 @@ module.exports = function(passport) {
         next()
     });
 
-    // sends successful login state back to angular or other app
-    router.get('/success', function(req, res, user) {
-        res.send({
-            state: 'success',
-            user: req.user ? req.user : null
-        });
-    });
-
-    // sends failure login state back to angular or other app
-    router.get('/failure', function(req, res) {
-        res.send({
-            state: 'failure',
-            user: null,
-            message: "Invalid username or password"
-        });
-    });
-
     // log in
-    // router.post('/login', passport.authenticate('login', {
-    //     successRedirect: '/auth/success',
-    //     failureRedirect: '/auth/failure'
-    // }));
-
-    // // sign up
-    // router.post('/signup', passport.authenticate('signup', {
-    //     successRedirect: '/auth/success',
-    //     failureRedirect: '/auth/failure'
-    // }));
-
-    // // log in
     router.post('/login', function handleLocalAuth(req, res, next) {
-
+        
         passport.authenticate('login',
             function(err, user, info) {
                 if (err) {
@@ -62,7 +36,7 @@ module.exports = function(passport) {
                     });
                 };
             
-                // Manually establish the session...
+                // Log user in
                 req.login(user, function(err) {
                     if (err) {
                         res.json({
@@ -71,14 +45,16 @@ module.exports = function(passport) {
                             message: "Unable to login"
                         })
                     };
-                    
                     // successful login
-                    // get token from jwt
+                    // if user is found and password is right, create a token
+                    var token = jwt.sign(user, 'privateKey');
                     
+                    res.cookie('TOKEN', token);
+                    // also included token in response
                     res.json({
                             state: 'success',
                             user: user,
-                            token: "logintoken123",
+                            token: token,
                             message: "user authenticated"
                         })
                     
@@ -89,22 +65,89 @@ module.exports = function(passport) {
     });
 
     // sign up
-    router.post('/signup', passport.authenticate('signup', {
-        successRedirect: '/auth/success',
-        failureRedirect: '/auth/failure'
-    }));
+    router.post('/signup', function handleLocalAuth(req, res, next) {
+    
+        passport.authenticate('signup',
+            function(err, user, info) {
+                if (err) {
+                    res.json({
+                        state: 'failure',
+                        user: null,
+                        message: err
+                    });
+                };
 
+                if (!user) {
+                    res.json({
+                        state: 'failure',
+                        user: null,
+                        message: "Error creating user"
+                    });
+                };
+                
+                // Log user in
+                req.login(user, function(err) {
+                    if (err) {
+                        res.json({
+                            state: 'failure',
+                            user: null,
+                            message: "Unable to login"
+                        })
+                    };
+                    // successful login
+                    // if user is found and password is right, create a token
+                    var token = jwt.sign(user, 'privateKey');
+                    
+                    res.cookie('TOKEN', token);
+                    // also included token in response
+                    res.json({
+                            state: 'success',
+                            user: user,
+                            token: token,
+                            message: "user authenticated"
+                        })
+                    return
+                });
+            })(req, res, next)
+    });
+    
     // log out
     router.get('/signout', function(req, res) {
         // console.log('logout and redirect to /')
         req.logout();
+        res.clearCookie('TOKEN');
         // redirect is done in angular app
         res.send({
             state: 'success',
             message: "User logged out"
         });
     });
-
+    
+    // this is only called if token cookie exists
+    router.get('/getuser/:token*?', function(req, res) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+        // get user object from token
+        var token = req.query.token || req.cookies.TOKEN;
+        
+        var result = jwt.verify(token, 'privateKey');
+        
+        if (result) {
+            res.json({
+                    state: 'success',
+                    user: result._doc,
+                    message: 'user info retrieved'
+                });
+            
+        } else {
+            res.json({
+                    state: 'failure',
+                    token: token,
+                    err: result,
+                    message: 'unable to get user'
+                });
+        } 
+    });
+    
     return router;
 
 }

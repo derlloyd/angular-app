@@ -13,6 +13,11 @@ module.exports = function(passport) {
     // needs to be provided a unique ID for each user
     passport.serializeUser(function(user, done) {
         // tell passport which id to user for user
+        if (!user) {
+            console.log("no user exists");
+            return done    
+        };
+        
         console.log('serializing user:', user._id);
         // return users unique id
         return done(null, user._id);
@@ -40,6 +45,7 @@ module.exports = function(passport) {
         },
         function(req, username, password, done) {
             // first try to find the username
+            
             User.findOne({
                 'username': username
             }, function(err, user) {
@@ -56,12 +62,19 @@ module.exports = function(passport) {
                     return done(null, false);
                 };
                 
+                // submit password could already be hashed, check
+                if (password === user.password) {
+                    // user found, password good, login in user
+                    return done(null, user)
+                };
+                
                 // compare password with hashed password, if false, wrong password
                 if (bCrypt.compareSync(password, user.password) === false) {
                     console.log('incorrect password');
                     return done(null, false);
                 };
 
+                
                 // user found, password good, login in user
                 return done(null, user)
 
@@ -101,10 +114,13 @@ module.exports = function(passport) {
                         return done(err, false);
                     }
                     console.log('successfully signed up user ' + username);
+                    console.log(newUser)
                     return done(null, newUser)
                 })
             });
-        }));
+        })
+    );
+    
     // Generates hash using bCrypt
     var createHash = function(password) {
         return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
