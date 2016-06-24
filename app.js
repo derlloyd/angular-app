@@ -97,5 +97,15 @@ app.use(function(err, req, res, next) {
 });
 
 
+// -------------------------------------Start the server--------------------------------------
+// -------------------------------------------------------------------------------------------
+
+var server = app.listen(process.env.PORT, process.env.IP, function() {
+  var host = server.address().address;
+  var port = server.address().port;
+
+  console.log('server listening at http://' + host + ':' + port);
+});
+
 module.exports = app;
 
