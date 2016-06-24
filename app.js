@@ -29,13 +29,9 @@ require('./models/models.js');
 // mongoose for mongodb
 var mongoose = require('mongoose');
 
-if (process.env.DEV_ENV) {
-  // if we are local, use local db
-  mongoose.connect(config.localDatabase)
-} else {
-  // else use cloud db
-  mongoose.connect(config.cloudDatabase)
-};
+// connect either to local or cloud db
+mongoose.connect(process.env.MONGOLAB_URI || config.localDatabase)
+
 
 // import routers
 var authRoutes = require('./routes/authenticate')(passport);
