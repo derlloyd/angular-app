@@ -47,7 +47,11 @@ app.set('view engine', 'ejs');
 
 
 app.use(logger('dev'));
-app.use(session({'secret': config.secret}));
+app.use(session({
+  'secret': config.secret,
+  'resave': true,
+  'saveUninitialized': true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -106,5 +110,5 @@ var server = app.listen(process.env.PORT, process.env.IP, function() {
   console.log('server listening at http://' + host + ':' + port);
 });
 
-module.exports = app;
+// module.exports = app;
 
