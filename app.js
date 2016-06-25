@@ -51,7 +51,6 @@ app.use(session({'secret': config.secret}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));  // public path
 app.use(passport.initialize());
 app.use(passport.session());
